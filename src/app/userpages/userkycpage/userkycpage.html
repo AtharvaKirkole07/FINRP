@@ -1,0 +1,284 @@
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<div class="kyc-wrapper">
+
+  <div class="bg-orb orb1"></div>
+  <div class="bg-orb orb2"></div>
+  <div class="bg-orb orb3"></div>
+
+  <!-- TOP HEADER -->
+  <div class="kyc-header">
+    <div class="brand-mark">
+      <div class="brand-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2L3 7v10l9 5 9-5V7L12 2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <span class="brand-name">SecureKYC</span>
+    </div>
+    <div class="header-meta">
+      <div class="session-badge">
+        <span class="pulse-dot"></span>
+        Secure Session Active
+      </div>
+      <div class="badge-tag">NEW APPLICATION</div>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <div class="kyc-hero">
+    <div class="hero-label">IDENTITY VERIFICATION</div>
+    <h1 class="hero-title">KYC <em>Onboarding</em></h1>
+    <p class="hero-sub">Complete your Know Your Customer verification in minutes. All data is encrypted end-to-end.</p>
+  </div>
+
+  <!-- PROGRESS STEPS -->
+  <div class="progress-track">
+    <div class="step" [class.active]="currentStep >= 1">
+      <div class="step-circle">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <span>Personal Info</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step" [class.active]="currentStep >= 2">
+      <div class="step-circle">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+      </div>
+      <span>Documents</span>
+    </div>
+    <div class="step-line"></div>
+    <div class="step" [class.active]="currentStep >= 3">
+      <div class="step-circle">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+      </div>
+      <span>Review</span>
+    </div>
+  </div>
+
+  <!-- SUCCESS SCREEN (Step 3) -->
+  <div class="kyc-success" *ngIf="currentStep === 3">
+    <div class="success-icon">✓</div>
+    <h2 class="success-title">Application Submitted!</h2>
+    <p class="success-msg">{{ submitSuccess }}</p>
+    <p class="success-sub">Our team will review your KYC application and get back to you within 2-3 business days.</p>
+  </div>
+
+  <!-- MAIN FORM GRID (Steps 1 & 2) -->
+  <div class="kyc-body" *ngIf="currentStep < 3">
+
+    <!-- LEFT: PERSONAL DETAILS -->
+    <div class="card form-card">
+      <div class="card-eyebrow">
+        <div class="eyebrow-icon">01</div>
+        Personal Details
+      </div>
+      <h2 class="card-title">Tell us about yourself</h2>
+
+      <div class="form-grid">
+
+        <div class="field-group">
+          <label class="field-label">Full Name *</label>
+          <div class="input-wrap">
+            <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <input type="text" [(ngModel)]="kycForm.fullName" placeholder="Rohan Sharma" class="field-input" />
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Date of Birth</label>
+          <div class="input-wrap">
+            <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <input type="date" [(ngModel)]="kycForm.dob" class="field-input" />
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Email Address</label>
+          <div class="input-wrap">
+            <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <input type="email" [(ngModel)]="kycForm.email" placeholder="rohan@email.com" class="field-input" />
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Mobile Number</label>
+          <div class="input-wrap">
+            <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12" y2="18"/></svg>
+            <input type="text" [(ngModel)]="kycForm.mobile" placeholder="+91 98765 43210" class="field-input" />
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">PAN Number *</label>
+          <div class="input-wrap">
+            <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            <input type="text" [(ngModel)]="kycForm.pan" placeholder="ABCDE1234F" class="field-input" maxlength="10" style="text-transform:uppercase" />
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Aadhaar Number *</label>
+          <div class="input-wrap">
+            <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <input type="text" [(ngModel)]="kycForm.aadhaar" placeholder="XXXX XXXX XXXX" class="field-input" maxlength="14" />
+          </div>
+        </div>
+
+        <div class="field-group full-width">
+          <label class="field-label">Residential Address</label>
+          <div class="input-wrap textarea-wrap">
+            <svg class="input-icon textarea-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <textarea [(ngModel)]="kycForm.address" placeholder="Flat 4B, Green Valley Apartments, Mumbai - 400001" class="field-input field-textarea" rows="3"></textarea>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- RIGHT: DOCUMENT UPLOAD -->
+    <div class="card upload-card-panel">
+      <div class="card-eyebrow">
+        <div class="eyebrow-icon">02</div>
+        Document Upload
+      </div>
+      <h2 class="card-title">Upload your documents</h2>
+      <p class="card-desc">Accepted: JPG, PNG, PDF · Max 5MB each</p>
+
+      <div class="upload-list">
+
+        <div class="upload-item" [class.uploaded]="uploadedFiles['panCard']" (click)="triggerUpload('panCard')">
+          <input type="file" id="file-panCard" style="display:none" (change)="onFileSelected($event,'panCard')" accept="image/*,.pdf" />
+          <div class="upload-icon-wrap">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          </div>
+          <div class="upload-meta">
+            <span class="upload-name">PAN Card</span>
+            <span class="upload-hint" *ngIf="!uploadedFiles['panCard']">Click to upload</span>
+            <span class="upload-done" *ngIf="uploadedFiles['panCard']">{{ uploadedFiles['panCard'] }}</span>
+          </div>
+          <div class="upload-status">
+            <div class="status-circle" [class.done]="uploadedFiles['panCard']">
+              <svg *ngIf="uploadedFiles['panCard']" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20,6 9,17 4,12"/></svg>
+              <svg *ngIf="!uploadedFiles['panCard']" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="upload-item" [class.uploaded]="uploadedFiles['aadhaarFront']" (click)="triggerUpload('aadhaarFront')">
+          <input type="file" id="file-aadhaarFront" style="display:none" (change)="onFileSelected($event,'aadhaarFront')" accept="image/*,.pdf" />
+          <div class="upload-icon-wrap">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <div class="upload-meta">
+            <span class="upload-name">Aadhaar — Front</span>
+            <span class="upload-hint" *ngIf="!uploadedFiles['aadhaarFront']">Click to upload</span>
+            <span class="upload-done" *ngIf="uploadedFiles['aadhaarFront']">{{ uploadedFiles['aadhaarFront'] }}</span>
+          </div>
+          <div class="upload-status">
+            <div class="status-circle" [class.done]="uploadedFiles['aadhaarFront']">
+              <svg *ngIf="uploadedFiles['aadhaarFront']" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20,6 9,17 4,12"/></svg>
+              <svg *ngIf="!uploadedFiles['aadhaarFront']" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="upload-item" [class.uploaded]="uploadedFiles['aadhaarBack']" (click)="triggerUpload('aadhaarBack')">
+          <input type="file" id="file-aadhaarBack" style="display:none" (change)="onFileSelected($event,'aadhaarBack')" accept="image/*,.pdf" />
+          <div class="upload-icon-wrap">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <div class="upload-meta">
+            <span class="upload-name">Aadhaar — Back</span>
+            <span class="upload-hint" *ngIf="!uploadedFiles['aadhaarBack']">Click to upload</span>
+            <span class="upload-done" *ngIf="uploadedFiles['aadhaarBack']">{{ uploadedFiles['aadhaarBack'] }}</span>
+          </div>
+          <div class="upload-status">
+            <div class="status-circle" [class.done]="uploadedFiles['aadhaarBack']">
+              <svg *ngIf="uploadedFiles['aadhaarBack']" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20,6 9,17 4,12"/></svg>
+              <svg *ngIf="!uploadedFiles['aadhaarBack']" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="upload-item" [class.uploaded]="uploadedFiles['selfie']" (click)="triggerUpload('selfie')">
+          <input type="file" id="file-selfie" style="display:none" (change)="onFileSelected($event,'selfie')" accept="image/*" />
+          <div class="upload-icon-wrap">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          </div>
+          <div class="upload-meta">
+            <span class="upload-name">Selfie / Live Photo</span>
+            <span class="upload-hint" *ngIf="!uploadedFiles['selfie']">Click to upload</span>
+            <span class="upload-done" *ngIf="uploadedFiles['selfie']">{{ uploadedFiles['selfie'] }}</span>
+          </div>
+          <div class="upload-status">
+            <div class="status-circle" [class.done]="uploadedFiles['selfie']">
+              <svg *ngIf="uploadedFiles['selfie']" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20,6 9,17 4,12"/></svg>
+              <svg *ngIf="!uploadedFiles['selfie']" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="upload-item" [class.uploaded]="uploadedFiles['electricityBill']" (click)="triggerUpload('electricityBill')">
+          <input type="file" id="file-electricityBill" style="display:none" (change)="onFileSelected($event,'electricityBill')" accept="image/*,.pdf" />
+          <div class="upload-icon-wrap">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          </div>
+          <div class="upload-meta">
+            <span class="upload-name">Address Proof / Bill</span>
+            <span class="upload-hint" *ngIf="!uploadedFiles['electricityBill']">Click to upload</span>
+            <span class="upload-done" *ngIf="uploadedFiles['electricityBill']">{{ uploadedFiles['electricityBill'] }}</span>
+          </div>
+          <div class="upload-status">
+            <div class="status-circle" [class.done]="uploadedFiles['electricityBill']">
+              <svg *ngIf="uploadedFiles['electricityBill']" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20,6 9,17 4,12"/></svg>
+              <svg *ngIf="!uploadedFiles['electricityBill']" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="upload-progress-wrap">
+        <div class="progress-label">
+          <span>Documents Uploaded</span>
+          <span class="progress-count">{{ uploadCount }}/5</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" [style.width.%]="(uploadCount/5)*100"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FOOTER ACTION -->
+  <div class="kyc-footer" *ngIf="currentStep < 3">
+
+    <!-- Error message -->
+    <div class="feedback-msg error-msg" *ngIf="submitError">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      {{ submitError }}
+    </div>
+
+    <div class="footer-note">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Your data is protected with 256-bit AES encryption
+    </div>
+
+    <button class="submit-btn"
+            (click)="submitKyc()"
+            [class.ready]="uploadCount > 0"
+            [disabled]="isSubmitting">
+      <span>{{ isSubmitting ? 'Submitting...' : 'Submit KYC Application' }}</span>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <line x1="5" y1="12" x2="19" y2="12"/>
+        <polyline points="12,5 19,12 12,19"/>
+      </svg>
+    </button>
+
+  </div>
+
+</div>

@@ -1,0 +1,128 @@
+<div class="kyc-container">
+
+  <div class="header">
+    <div>
+      <h2>KYC REVIEW — #KYC-2025-00847</h2>
+      <span class="sub">Submitted: Mar 04, 2025 · Assigned to you</span>
+    </div>
+
+    <div class="status">
+      <span class="badge">PENDING REVIEW</span>
+    </div>
+  </div>
+
+
+  <div class="main-grid">
+
+    <!-- LEFT PANEL -->
+    <div class="left-panel">
+
+      <h3>Applicant Details</h3>
+
+      <div class="details-grid">
+        <div>
+          <label>Full Name</label>
+          <p>{{applicant.name}}</p>
+        </div>
+
+        <div>
+          <label>Date of Birth</label>
+          <p>{{applicant.dob}}</p>
+        </div>
+
+        <div>
+          <label>Email</label>
+          <p>{{applicant.email}}</p>
+        </div>
+
+        <div>
+          <label>Mobile</label>
+          <p>{{applicant.mobile}}</p>
+        </div>
+
+        <div>
+          <label>PAN Number</label>
+          <p>{{applicant.pan}}</p>
+        </div>
+
+        <div>
+          <label>Aadhaar (Masked)</label>
+          <p>{{applicant.aadhaar}}</p>
+        </div>
+      </div>
+
+
+      <h3 class="doc-title">Uploaded Documents</h3>
+
+      <div class="doc-card">
+
+        <div class="doc-info">
+          <input type="checkbox"/>
+          <div>
+           
+          </div>
+        </div>
+
+        <button class="view-btn">View</button>
+
+      </div>
+
+    </div>
+
+
+    <!-- RIGHT PANEL -->
+    <div class="right-panel">
+
+      <h3>Verification Checklist</h3>
+
+      <ul class="checklist">
+        <li><input type="checkbox" checked/> Document is clear & not blurred</li>
+        <li><input type="checkbox" checked/> Name matches across all documents</li>
+        <li><input type="checkbox" checked/> DOB matches submitted info</li>
+        <li><input type="checkbox"/> Selfie vs ID face match — verify manually</li>
+        <li><input type="checkbox" checked/> Signature is clearly drawn</li>
+        <li><input type="checkbox"/> No evidence of tampering</li>
+        <li><input type="checkbox"/> Address proof matches</li>
+      </ul>
+
+
+      <div class="risk">
+        <h3>Risk Score</h3>
+        <p>Risk Level: <span class="low">LOW — 28/100</span></p>
+
+        <div class="progress">
+          <div class="progress-fill"></div>
+        </div>
+      </div>
+
+
+      <div class="notes">
+        <h3>Reviewer Notes</h3>
+        <textarea placeholder="Add internal notes..."></textarea>
+      </div>
+
+
+      <div class="reason">
+        <h3>Rejection / Request Reason</h3>
+        <select>
+          <option>Select reason if rejecting...</option>
+          <option>Document not clear</option>
+          <option>Mismatch details</option>
+          <option>Fake document</option>
+        </select>
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <div class="action-buttons">
+
+    <button class="approve">Approve KYC</button>
+    <button class="request">Request More Info</button>
+    <button class="reject">Reject KYC</button>
+
+  </div>
+
+</div>

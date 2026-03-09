@@ -1,0 +1,47 @@
+<div class="login-container">
+  <form
+    [formGroup]="loginForm"
+    (ngSubmit)="onSubmit()"
+    class="login-card"
+    novalidate
+  >
+
+    <h2>ERP Login</h2>
+    <p class="subtitle">Secure access to your workspace</p>
+
+    <input
+      type="text"
+      placeholder="Username"
+      formControlName="username"
+    />
+
+    <div class="field-error"
+         *ngIf="loginForm.get('username')?.touched &&
+                loginForm.get('username')?.invalid">
+      Username is required
+    </div>
+
+    <input
+      type="password"
+      placeholder="Password"
+      formControlName="password"
+    />
+
+    <div class="field-error"
+         *ngIf="loginForm.get('password')?.touched &&
+                loginForm.get('password')?.invalid">
+      Password must be at least 6 characters
+    </div>
+
+    <button
+      type="submit"
+      [disabled]="loading || loginForm.invalid">
+      {{ loading ? 'Signing in...' : 'Login' }}
+    </button>
+
+    <p class="error" *ngIf="error">
+      {{ error }}
+    </p>
+
+  </form>
+</div>
