@@ -1,8 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { KycService } from '../serviceInterface/KycService';
+import { AuthService } from '../../login/serviceinterface/auth.service'; 
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-userkycpage',
@@ -10,41 +12,63 @@ import { KycService } from '../serviceInterface/KycService';
   templateUrl: './userkycpage.html',
   styleUrl: './userkycpage.css',
 })
-export class Userkycpage {
+export class Userkycpage implements OnInit {
 
   currentStep = 1;
   isSubmitting = false;
-  submitError = '';
+  submitError  = '';
   submitSuccess = '';
-  userId = 1; // Replace with logged-in user's ID later
+  userId: number | null = null;   // ← no longer hardcoded
 
   kycForm = {
     fullName: '',
-    dob: '',
-    email: '',
-    mobile: '',
-    pan: '',
-    aadhaar: '',
-    address: ''
+    dob:      '',
+    email:    '',
+    mobile:   '',
+    pan:      '',
+    aadhaar:  '',
+    address:  ''
   };
 
   documents: { [key: string]: File | null } = {
-    panCard: null,
-    aadhaarFront: null,
-    aadhaarBack: null,
-    selfie: null,
+    panCard:         null,
+    aadhaarFront:    null,
+    aadhaarBack:     null,
+    selfie:          null,
     electricityBill: null
   };
 
   uploadedFiles: { [key: string]: string | null } = {
-    panCard: null,
-    aadhaarFront: null,
-    aadhaarBack: null,
-    selfie: null,
+    panCard:         null,
+    aadhaarFront:    null,
+    aadhaarBack:     null,
+    selfie:          null,
     electricityBill: null
   };
 
-  constructor(private kycService: KycService) {}
+  constructor(
+    private kycService:  KycService,
+    private authService: AuthService   // ← inject AuthService
+  ) {}
+
+  ngOnInit(): void {
+    const username = this.authService.getLoggedInUsername();
+
+    if (!username) {
+      this.submitError = 'Session expired. Please login again.';
+      return;
+    }
+
+    // fetch real userId from KYC service using logged-in username
+    this.kycService.getIdByUsername(username).subscribe({
+      next: (id) => {
+        this.userId = id;
+      },
+      error: () => {
+        this.submitError = 'Could not load user profile. Please try again.';
+      }
+    });
+  }
 
   get uploadCount(): number {
     return Object.values(this.uploadedFiles).filter(v => v !== null).length;
@@ -68,6 +92,11 @@ export class Userkycpage {
   this.submitError = '';
   this.submitSuccess = '';
 
+  if (this.userId === null) {
+    this.submitError = 'User profile not loaded yet. Please wait.';
+    return;
+  }
+
   if (!this.kycForm.fullName || !this.kycForm.pan || !this.kycForm.aadhaar) {
     this.submitError = 'Please fill Full Name, PAN and Aadhaar fields.';
     return;
@@ -76,27 +105,23 @@ export class Userkycpage {
   this.isSubmitting = true;
 
   this.kycService.submitKyc(this.kycForm, this.documents, this.userId)
+    .pipe(
+      finalize(() => {
+        this.isSubmitting = false;   // ✅ always runs
+      })
+    )
     .subscribe({
       next: (response) => {
-        this.isSubmitting = false;
-
-        // ✅ Check explicitly for false, not just truthy
         if (response.success === false) {
           this.submitError = response.message;
           return;
         }
 
-        // ✅ Success — move to step 3
         this.submitSuccess = `KYC submitted! Application ID: ${response.applicationId}`;
-        this.currentStep = 3;
+        this.currentStep = 3;  // ✅ move to success screen
       },
       error: (err) => {
-        this.isSubmitting = false;
         this.submitError = err.error?.message || 'Submission failed. Please try again.';
-      },
-      complete: () => {
-        // ✅ Failsafe — ensure spinner never gets stuck
-        this.isSubmitting = false;
       }
     });
 }

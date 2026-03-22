@@ -5,10 +5,11 @@
   </p>
 
   <div class="card-grid">
-    <div 
+    <div
       class="module-card"
       *ngFor="let module of modules"
-     
+      (click)="navigate(module.link)"   
+      style="cursor: pointer"
     >
       <div class="icon">{{ module.icon }}</div>
       <div class="title">{{ module.name }}</div>

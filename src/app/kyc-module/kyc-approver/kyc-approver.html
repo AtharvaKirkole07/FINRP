@@ -1,0 +1,292 @@
+<!-- LOADING -->
+<div class="loading-state" *ngIf="isLoading">
+  <div class="loading-ring"></div>
+  <p>Loading review data…</p>
+</div>
+
+<!-- ERROR -->
+<div class="error-state" *ngIf="!isLoading && loadError">
+  <div class="error-icon">⚠</div>
+  <p>{{ loadError }}</p>
+  <button class="back-link" (click)="goBack()">← Back to L2 Queue</button>
+</div>
+
+<!-- MAIN -->
+<div class="kyc-wrap" *ngIf="!isLoading && reviewData">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <button class="back-link" (click)="goBack()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M19 12H5M5 12l7-7M5 12l7 7"/>
+      </svg>
+      Back to L2 Queue
+    </button>
+
+    <div class="topbar-center">
+      <span class="level-badge">L2 FINAL REVIEW</span>
+      <span class="app-id">#{{ reviewData.applicationId }}</span>
+      <span class="app-name">{{ reviewData.fullName }}</span>
+    </div>
+
+    <div class="topbar-right-group">
+      <span class="risk-chip" [class]="riskColor">
+        Risk: {{ reviewData.riskFlag }}
+      </span>
+      <span class="status-pill status-{{ reviewData.l2Status?.toLowerCase() }}">
+        <span class="status-dot"></span>
+        {{ reviewData.l2Status === 'PENDING' ? 'Awaiting L2' : reviewData.l2Status }}
+      </span>
+    </div>
+  </div>
+
+  <!-- FORWARDED CONTEXT BANNER -->
+  <div class="context-banner">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="12" y1="8" x2="12" y2="12"/>
+      <line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    Forwarded by L1 Officer on <strong>{{ reviewData.forwardedAt }}</strong>.
+    This is the final approval stage.
+  </div>
+
+  <!-- ACTION BANNER -->
+  <div class="action-banner" *ngIf="actionMessage"
+       [class.is-success]="actionMessage.startsWith('✓')"
+       [class.is-warn]="actionMessage.startsWith('⚠')"
+       [class.is-error]="actionMessage.startsWith('✗')">
+    {{ actionMessage }}
+  </div>
+
+  <div class="grid">
+
+    <!-- ── LEFT ── -->
+    <div class="col-left">
+
+      <!-- Applicant Details -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+              <circle cx="12" cy="7" r="4"/>
+            </svg>
+          </div>
+          Applicant Details
+        </div>
+        <div class="info-grid">
+          <div class="info-cell"><span class="info-label">Full Name</span><span class="info-val">{{ reviewData.fullName }}</span></div>
+          <div class="info-cell"><span class="info-label">Date of Birth</span><span class="info-val">{{ reviewData.dob }}</span></div>
+          <div class="info-cell"><span class="info-label">Email</span><span class="info-val">{{ reviewData.email }}</span></div>
+          <div class="info-cell"><span class="info-label">Mobile</span><span class="info-val">{{ reviewData.mobile }}</span></div>
+          <div class="info-cell"><span class="info-label">PAN</span><span class="info-val mono accent">{{ reviewData.pan }}</span></div>
+          <div class="info-cell"><span class="info-label">Aadhaar</span><span class="info-val mono">{{ reviewData.aadhaar }}</span></div>
+          <div class="info-cell span-2"><span class="info-label">Address</span><span class="info-val">{{ reviewData.address }}</span></div>
+          <div class="info-cell span-2"><span class="info-label">Submitted At</span><span class="info-val muted">{{ reviewData.submittedAt }}</span></div>
+        </div>
+      </div>
+
+      <!-- Documents — same tiles, same modal -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+          </div>
+          Uploaded Documents
+          <span class="doc-counter">{{ docSlots.length }} files</span>
+        </div>
+        <div class="doc-grid">
+          <div class="doc-tile"
+               *ngFor="let slot of docSlots; let i = index"
+               [class.doc-tile--uploaded]="slot.path"
+               [class.doc-tile--missing]="!slot.path"
+               (click)="viewDocument(slot)"
+               [style.animation-delay]="(i * 60) + 'ms'">
+            <div class="doc-tile-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+              </svg>
+            </div>
+            <div class="doc-tile-body">
+              <span class="doc-tile-name">{{ slot.displayName }}</span>
+              <span class="doc-tile-hint" *ngIf="!slot.path">Not uploaded</span>
+              <span class="doc-tile-hint" *ngIf="slot.path">{{ getFilename(slot.path) }}</span>
+            </div>
+            <div class="doc-tile-action" *ngIf="slot.path">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+              View
+            </div>
+            <div class="doc-tile-missing" *ngIf="!slot.path">—</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── RIGHT ── -->
+    <div class="col-right">
+
+      <!-- L1 Officer Checklist — READ ONLY -->
+      <div class="card l1-snapshot">
+        <div class="card-head">
+          <div class="card-icon l1-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 11 12 14 22 4"/>
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+            </svg>
+          </div>
+          L1 Verification Snapshot
+          <span class="l1-badge">{{ l1ChecklistCount }}/{{ l1ChecklistTotal }} passed</span>
+        </div>
+
+        <div class="progress-track">
+          <div class="progress-fill"
+               [style.width.%]="(l1ChecklistCount / l1ChecklistTotal) * 100"
+               [class.progress-fill--done]="l1ChecklistCount === l1ChecklistTotal">
+          </div>
+        </div>
+
+        <ul class="checklist readonly-checklist">
+          <li class="check-item"
+              *ngFor="let entry of l1ChecklistEntries"
+              [class.check-item--on]="entry.value"
+              [class.check-item--fail]="!entry.value">
+            <span class="check-icon">
+              <svg *ngIf="entry.value" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+              <svg *ngIf="!entry.value" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </span>
+            {{ entry.label }}
+          </li>
+        </ul>
+      </div>
+
+      <!-- L1 Reviewer Notes — READ ONLY -->
+      <div class="card l1-snapshot">
+        <div class="card-head">
+          <div class="card-icon l1-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+          </div>
+          L1 Officer Notes
+          <span class="readonly-tag">Read Only</span>
+        </div>
+        <div class="l1-notes-box">
+          {{ reviewData.l1Notes || 'No notes provided by L1 officer.' }}
+        </div>
+      </div>
+
+      <!-- L2 Own Notes -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+          </div>
+          Senior Officer Notes
+        </div>
+        <textarea class="notes-input"
+                  [(ngModel)]="l2Notes"
+                  placeholder="Add final review notes (optional)…"
+                  rows="3"></textarea>
+      </div>
+
+      <!-- Rejection Reason -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-icon reject-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="15" y1="9" x2="9" y2="15"/>
+              <line x1="9" y1="9" x2="15" y2="15"/>
+            </svg>
+          </div>
+          Rejection Reason
+          <span class="optional-tag">Only if rejecting</span>
+        </div>
+        <select class="reason-select" [(ngModel)]="l2RejectionReason">
+          <option value="">Select reason if rejecting…</option>
+          <option value="Document not clear">Document not clear</option>
+          <option value="Mismatch in details">Mismatch in details</option>
+          <option value="Suspected fake document">Suspected fake document</option>
+          <option value="Incomplete documents">Incomplete documents</option>
+          <option value="Address proof mismatch">Address proof mismatch</option>
+        </select>
+      </div>
+
+      <!-- Final Actions -->
+      <div class="action-row">
+        <button class="btn-approve"
+                (click)="approveKyc()"
+                [disabled]="actionStatus !== 'idle' || reviewData.l2Status !== 'PENDING'">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          {{ actionStatus === 'approving' ? 'Approving…' : 'Final Approve' }}
+        </button>
+        <button class="btn-reject"
+                (click)="rejectKyc()"
+                [disabled]="actionStatus !== 'idle' || reviewData.l2Status !== 'PENDING'">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+          {{ actionStatus === 'rejecting' ? 'Rejecting…' : 'Final Reject' }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- DOCUMENT MODAL — identical to L1 -->
+<div class="modal-backdrop" *ngIf="activeDocUrl" (click)="closeViewer()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-topbar">
+      <div class="modal-title-wrap">
+        <div class="modal-title-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+        </div>
+        <span class="modal-title">{{ activeDocName }}</span>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-newtab" (click)="openInNewTab()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+            <polyline points="15 3 21 3 21 9"/>
+            <line x1="10" y1="14" x2="21" y2="3"/>
+          </svg>
+          Open in new tab
+        </button>
+        <button class="modal-close-btn" (click)="closeViewer()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="modal-content">
+      <img *ngIf="activeDocType === 'image'" [src]="activeDocUrl" class="modal-image" alt="{{ activeDocName }}" />
+      <iframe *ngIf="activeDocType === 'pdf'" [src]="safeDocUrl" class="modal-pdf" frameborder="0"></iframe>
+    </div>
+  </div>
+</div>

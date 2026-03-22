@@ -1,3 +1,7 @@
+<!-- Show topbar only when user is logged in (not on login/signup pages) -->
+<app-topbar *ngIf="showTopbar()"></app-topbar>
 
-
-<router-outlet />
+<!-- All page content renders here, pushed below the topbar -->
+<main class="app-content" [class.with-topbar]="showTopbar()">
+  <router-outlet></router-outlet>
+</main>

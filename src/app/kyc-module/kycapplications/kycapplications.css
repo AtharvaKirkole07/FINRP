@@ -484,3 +484,13 @@
   padding: 10px 24px; font-weight: 600;
   cursor: pointer;
 }
+
+/* ── Force red stripe on rejected cards ── */
+.card-rejected .card-stripe {
+  background: #f04e4e !important;
+}
+
+/* ── Force gold stripe on approved cards ── */
+.card-approved .card-stripe {
+  background: #10c97a !important;
+}

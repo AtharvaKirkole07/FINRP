@@ -1,0 +1,213 @@
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<div class="l2-shell">
+
+  <!-- MESH BACKGROUND -->
+  <div class="mesh-bg">
+    <div class="mesh-orb mesh-1"></div>
+    <div class="mesh-orb mesh-2"></div>
+    <div class="mesh-orb mesh-3"></div>
+  </div>
+
+  <!-- ── HEADER ── -->
+  <header class="l2-header">
+    <div class="header-brand">
+      <div class="brand-shield">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <span class="brand-super">SENIOR OFFICER PORTAL</span>
+        <span class="brand-title">L2 Final Review</span>
+      </div>
+    </div>
+
+    <div class="header-meta">
+      <div class="meta-stat">
+        <span class="meta-num">{{ pendingCount }}</span>
+        <span class="meta-lbl">Awaiting</span>
+      </div>
+      <div class="meta-divider"></div>
+      <div class="meta-stat">
+        <span class="meta-num green">{{ approvedCount }}</span>
+        <span class="meta-lbl">Approved</span>
+      </div>
+      <div class="meta-divider"></div>
+      <div class="meta-stat">
+        <span class="meta-num red">{{ rejectedCount }}</span>
+        <span class="meta-lbl">Rejected</span>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <div class="authority-badge">
+        <span class="auth-dot"></span>
+        LEVEL 2 APPROVER
+      </div>
+      <div class="date-tag">{{ today }}</div>
+    </div>
+  </header>
+
+  <!-- ── HERO ── -->
+  <div class="l2-hero">
+    <div class="hero-text">
+      <div class="hero-tag">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        FINAL APPROVAL QUEUE
+      </div>
+      <h1 class="hero-h1">Senior Officer <span class="hero-accent">Review Desk</span></h1>
+      <p class="hero-p">Applications forwarded by L1 analysts. Your decision is binding and final.</p>
+    </div>
+
+    <div class="hero-gauge">
+      <div class="gauge-ring">
+        <svg viewBox="0 0 80 80" width="80" height="80">
+          <circle cx="40" cy="40" r="32" fill="none" stroke="rgba(139,92,246,0.15)" stroke-width="6"/>
+          <circle cx="40" cy="40" r="32" fill="none" stroke="url(#gaugeGrad)" stroke-width="6"
+                  stroke-linecap="round" stroke-dasharray="201"
+                  [attr.stroke-dashoffset]="201 - (201 * (approvedCount / (cards.length || 1)))"
+                  transform="rotate(-90 40 40)"/>
+          <defs>
+            <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#8b5cf6"/>
+              <stop offset="100%" stop-color="#10c97a"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <div class="gauge-center">
+          <span class="gauge-val">{{ cards.length }}</span>
+          <span class="gauge-sub">total</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CONTROLS ── -->
+  <div class="l2-controls">
+    <div class="search-box">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" [(ngModel)]="searchQuery"
+             class="search-field"
+             placeholder="Search name, PAN, ref ID…" />
+    </div>
+
+    <div class="filter-row">
+      <button class="ftag"      [class.ftag--on]="activeFilter === 'all'"      (click)="setFilter('all')">All <span class="ftag-count">{{ cards.length }}</span></button>
+      <button class="ftag ftag--amber"   [class.ftag--on]="activeFilter === 'PENDING'"  (click)="setFilter('PENDING')">Pending <span class="ftag-count">{{ pendingCount }}</span></button>
+      <button class="ftag ftag--green"   [class.ftag--on]="activeFilter === 'APPROVED'" (click)="setFilter('APPROVED')">Approved <span class="ftag-count">{{ approvedCount }}</span></button>
+      <button class="ftag ftag--red"     [class.ftag--on]="activeFilter === 'REJECTED'" (click)="setFilter('REJECTED')">Rejected <span class="ftag-count">{{ rejectedCount }}</span></button>
+    </div>
+
+    <div class="result-label">{{ filteredCards.length }} result{{ filteredCards.length !== 1 ? 's' : '' }}</div>
+  </div>
+
+  <!-- ── LOADING ── -->
+  <div class="state-center" *ngIf="isLoading">
+    <div class="l2-spinner"></div>
+    <p class="state-text">Loading queue…</p>
+  </div>
+
+  <!-- ── ERROR ── -->
+  <div class="state-center" *ngIf="loadError && !isLoading">
+    <div class="state-icon">⚠</div>
+    <p class="state-text">{{ loadError }}</p>
+    <button class="retry-pill" (click)="reload()">Try again</button>
+  </div>
+
+  <!-- ── GRID ── -->
+  <div class="l2-grid" *ngIf="!isLoading && !loadError">
+    <div class="l2-card"
+         *ngFor="let card of filteredCards; let i = index"
+         [class.l2-card--pending]="card.l2Status === 'PENDING'"
+         [class.l2-card--approved]="card.l2Status === 'APPROVED'"
+         [class.l2-card--rejected]="card.l2Status === 'REJECTED'"
+         (click)="openApplication(card)"
+         [style.animation-delay]="(i * 55) + 'ms'">
+
+      <!-- top accent line -->
+      <div class="card-line"></div>
+
+      <!-- HEAD -->
+      <div class="card-top">
+        <div class="card-avatar" [class]="'av-' + card.colorTag">
+          {{ card.initials }}
+        </div>
+        <div class="card-badges">
+          <span class="status-pill"
+                [class.pill--pending]="card.l2Status === 'PENDING'"
+                [class.pill--approved]="card.l2Status === 'APPROVED'"
+                [class.pill--rejected]="card.l2Status === 'REJECTED'">
+            <span class="pill-pulse"></span>
+            {{ card.statusLabel }}
+          </span>
+          <span class="risk-pill" [class]="'risk--' + card.riskFlag?.toLowerCase()">
+            {{ card.riskFlag }}
+          </span>
+        </div>
+      </div>
+
+      <!-- IDENTITY -->
+      <div class="card-name">{{ card.name }}</div>
+      <div class="card-ref">{{ card.refId }}</div>
+
+      <!-- CHIPS -->
+      <div class="card-chips">
+        <div class="chip-item">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+          </svg>
+          {{ card.pan }}
+        </div>
+        <div class="chip-item">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+          </svg>
+   
+        </div>
+      </div>
+
+      <!-- DOCS -->
+      <div class="card-docs">
+        <span class="docs-label">Documents</span>
+        <div class="docs-track">
+          <div class="doc-pip" *ngFor="let n of [1,2,3,4,5]"
+               [class.pip--on]="card.docs >= n"
+               [title]="['PAN Card','Aadhaar Front','Aadhaar Back','Selfie','Address Proof'][n-1]">
+          </div>
+        </div>
+        <span class="docs-count">{{ card.docs }}/5</span>
+      </div>
+
+      <!-- FOOTER -->
+      <div class="card-foot">
+        <div class="card-time">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/>
+          </svg>
+          {{ card.forwardedAt }}
+        </div>
+        <button class="action-btn"
+                [class.action-btn--pending]="card.l2Status === 'PENDING'"
+                [class.action-btn--approved]="card.l2Status === 'APPROVED'"
+                [class.action-btn--rejected]="card.l2Status === 'REJECTED'">
+          {{ card.l2Status === 'APPROVED' ? 'View' : 'Final Review' }}
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12,5 19,12 12,19"/>
+          </svg>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── EMPTY ── -->
+  <div class="state-center" *ngIf="!isLoading && !loadError && filteredCards.length === 0">
+    <div class="empty-glyph">✦</div>
+    <p class="state-text">Queue is clear</p>
+    <p class="state-sub">No applications match your filter.</p>
+  </div>
+
+</div>

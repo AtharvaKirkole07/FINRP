@@ -15,7 +15,7 @@ export interface KycSubmitResponse {
 })
 export class KycService {
 
-  private baseUrl = 'http://localhost:8089/api/kyc';
+  private baseUrl = 'http://localhost:8088/api/kyc';
 
   constructor(private http: HttpClient) {}
 
@@ -51,4 +51,8 @@ export class KycService {
 
     return this.http.post<KycSubmitResponse>(`${this.baseUrl}/submit`, formData);
   }
+
+getIdByUsername(username: string): Observable<number> {
+  return this.http.get<number>(`${this.baseUrl}/getusername?username=${username}`);
+}
 }
