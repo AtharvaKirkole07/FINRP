@@ -93,6 +93,7 @@ export class KycApproval implements OnInit {
   //   ];
   // }
 
+
   // ── L1 checklist helpers ────────────────────────────────────────
 get l1ChecklistEntries(): { key: string; label: string; value: boolean }[] {
   if (!this.reviewData?.l1Checklist) return [];
@@ -123,10 +124,10 @@ get l1ChecklistEntries(): { key: string; label: string; value: boolean }[] {
     }
   }
 
-  get alreadyActioned(): boolean {
-    return this.reviewData?.l2Status !== 'PENDING';
-  }
-
+get alreadyActioned(): boolean {
+  const status = this.reviewData?.l2Status;
+  return status === 'KYC_Completed' || status === 'KYC_Rejected';
+}
   // ── Document viewer ─────────────────────────────────────────────
   getFilename(path: string): string {
     return path.split(/[\\/]/).pop() ?? path;
@@ -155,55 +156,74 @@ get l1ChecklistEntries(): { key: string; label: string; value: boolean }[] {
     if (this.activeDocUrl) window.open(this.activeDocUrl, '_blank');
   }
 
-  // ── Final Approve ───────────────────────────────────────────────
-  approveKyc(): void {
-    // if (!this.reviewData) return;
-    // this.actionStatus  = 'approving';
-    // this.actionMessage = '';
-    // this.cdr.detectChanges();
+approveKyc(): void {
+  console.log('approveKyc clicked');
+  console.log('reviewData:', this.reviewData);
+  console.log('alreadyActioned:', this.alreadyActioned);
 
-    // this.kycService.finaliseL2(this.reviewData.auditId, 'APPROVED', this.l2Notes).subscribe({
-    //   next: () => {
-    //     this.actionStatus  = 'idle';
-    //     this.actionMessage = '✓ KYC Approved — Final approval recorded.';
-    //     if (this.reviewData) this.reviewData.l2Status = 'APPROVED';
-    //     this.cdr.detectChanges();
-    //   },
-    //   error: () => {
-    //     this.actionStatus  = 'idle';
-    //     this.actionMessage = '✗ Approval failed. Please try again.';
-    //     this.cdr.detectChanges();
-    //   }
-    // });
+  if (!this.reviewData) {
+    console.log('BLOCKED — reviewData is null');
+    return;
   }
 
-  // ── Final Reject ────────────────────────────────────────────────
-  rejectKyc(): void {
-    // if (!this.reviewData) return;
+  const username = this.kycService.getLoggedInUsername();
+  console.log('username from JWT:', username);
 
-    // if (!this.l2RejectionReason) {
-    //   this.actionMessage = '⚠ Please select a rejection reason.';
-    //   return;
-    // }
+  this.actionStatus  = 'approving';
+  this.actionMessage = '';
+  this.cdr.detectChanges();
 
-    // this.actionStatus  = 'rejecting';
-    // this.actionMessage = '';
-    // this.cdr.detectChanges();
+  this.kycService.FinalApproval(
+    this.reviewData.auditId,
+    'KYC_Completed',
+    username
+  ).subscribe({
+    next: (res) => {
+      console.log('Approval success:', res);
+      this.actionStatus  = 'idle';
+      this.actionMessage = '✓ KYC Approved — Final approval recorded.';
+      if (this.reviewData) this.reviewData.l2Status = 'KYC_Completed';
+      this.cdr.detectChanges();
+    },
+    error: (err) => {
+      console.error('Approval error:', err);
+      this.actionStatus  = 'idle';
+      this.actionMessage = '✗ Approval failed. Please try again.';
+      this.cdr.detectChanges();
+    }
+  });
+}
 
-    // this.kycService.finaliseL2(this.reviewData.auditId, 'REJECTED', this.l2Notes).subscribe({
-    //   next: () => {
-    //     this.actionStatus  = 'idle';
-    //     this.actionMessage = `✗ KYC Rejected — Reason: "${this.l2RejectionReason}"`;
-    //     if (this.reviewData) this.reviewData.l2Status = 'REJECTED';
-    //     this.cdr.detectChanges();
-    //   },
-    //   error: () => {
-    //     this.actionStatus  = 'idle';
-    //     this.actionMessage = '✗ Rejection failed. Please try again.';
-    //     this.cdr.detectChanges();
-    //   }
-    // });
+rejectKyc(): void {
+  if (!this.reviewData) return;
+  if (!this.l2RejectionReason) {
+    this.actionMessage = '⚠ Please select a rejection reason.';
+    return;
   }
+  this.actionStatus  = 'rejecting';
+  this.actionMessage = '';
+  this.cdr.detectChanges();
+
+  const username = this.kycService.getLoggedInUsername();  // ← from JWT
+
+  this.kycService.FinalApproval(
+    this.reviewData.auditId,
+    'KYC_Rejected',
+    username
+  ).subscribe({
+    next: () => {
+      this.actionStatus  = 'idle';
+      this.actionMessage = `✗ KYC Rejected — Reason: "${this.l2RejectionReason}"`;
+      if (this.reviewData) this.reviewData.l2Status = 'KYC_Rejected';
+      this.cdr.detectChanges();
+    },
+    error: () => {
+      this.actionStatus  = 'idle';
+      this.actionMessage = '✗ Rejection failed. Please try again.';
+      this.cdr.detectChanges();
+    }
+  });
+}
 
   goBack(): void { this.router.navigate(['/kyc/kycapproval']); }
 }

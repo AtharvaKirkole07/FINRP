@@ -129,6 +129,29 @@ getAuditById(auditId: number) {
   return this.http.get<any>(`${this.base}/api/kyc/getAuditFormById/${auditId}`);
 }
 
+FinalApproval(auditId: number, status: string, username: string): Observable<string> {
+  return this.http.patch(
+    `${this.base}/api/kyc/updateFinalApproval`,
+    null,
+    { 
+      params: { id: auditId, status, username },
+      responseType: 'text'   // ← tells Angular not to parse as JSON
+    }
+  );
+}
+
+
+getLoggedInUsername(): string {
+  const token = localStorage.getItem('token'); // adjust key if different
+  if (!token) return '';
+
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.sub ?? payload.username ?? '';  // JWT 'sub' is usually the username
+  } catch {
+    return '';
+  }
+}
 
 
 }

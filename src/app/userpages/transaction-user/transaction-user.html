@@ -1,0 +1,432 @@
+<!-- ══════════════════════════════════════════════════════════
+     transaction-initiate.component.html
+     ══════════════════════════════════════════════════════════ -->
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="logo">VeraFlow <span>Banking Platform</span></div>
+  <div class="user-pill">
+    <div class="avatar">{{ currentUser.slice(0,2).toUpperCase() }}</div>
+    <span class="name">{{ currentUser }}</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <h1>Initiate Transfer</h1>
+    <p>Secure · Double-Entry Ledger · Real-Time</p>
+  </div>
+
+  <!-- BALANCE BAR -->
+  <div class="balance-bar">
+    <div class="bal-card primary">
+      <span class="bal-label">Available Balance</span>
+      <span class="bal-amount">₹ {{ formatINR(balance) }}</span>
+      <span class="bal-acct">{{ accountNumber }}</span>
+    </div>
+    <div class="bal-card">
+      <span class="bal-label">Today's Transfers</span>
+      <span class="bal-amount muted-amt">₹ {{ formatINR(todayTransfers) }}</span>
+      <span class="bal-acct">3 transactions</span>
+    </div>
+    <div class="bal-card">
+      <span class="bal-label">Daily Limit Remaining</span>
+      <span class="bal-amount teal-amt">₹ {{ formatINR(limitRemaining) }}</span>
+      <span class="bal-acct">Limit: ₹ 1,00,000</span>
+    </div>
+  </div>
+
+  <!-- STEPPER -->
+  <div class="stepper" *ngIf="!submitted">
+
+    <div class="step-item">
+      <div class="step-dot"
+           [class.active]="state.step === 1"
+           [class.done]="state.step > 1">
+        <span *ngIf="state.step <= 1">1</span>
+        <span *ngIf="state.step > 1">✓</span>
+      </div>
+      <span class="step-label" [class.active]="state.step === 1">Transfer Type</span>
+    </div>
+
+    <div class="step-line" [class.done]="state.step > 1"></div>
+
+    <div class="step-item">
+      <div class="step-dot"
+           [class.active]="state.step === 2"
+           [class.done]="state.step > 2">
+        <span *ngIf="state.step <= 2">2</span>
+        <span *ngIf="state.step > 2">✓</span>
+      </div>
+      <span class="step-label" [class.active]="state.step === 2">Details</span>
+    </div>
+
+    <div class="step-line" [class.done]="state.step > 2"></div>
+
+    <div class="step-item">
+      <div class="step-dot" [class.active]="state.step === 3">
+        <span>3</span>
+      </div>
+      <span class="step-label" [class.active]="state.step === 3">Review</span>
+    </div>
+
+  </div>
+
+  <!-- FORM CARD -->
+  <div class="form-card">
+
+    <!-- ══ SUCCESS SCREEN ══ -->
+    <div class="success-screen" *ngIf="submitted">
+      <div class="success-ring">✓</div>
+      <div>
+        <h3 class="success-title">Transfer Initiated</h3>
+        <p class="success-sub">Your transaction is in the ledger queue</p>
+      </div>
+      <div class="success-ref">REF: {{ referenceId }}</div>
+      <div class="success-detail">
+        ₹ {{ formatINR(reviewAmount) }} → {{ reviewReceiverName }}<br>
+        Status: <span class="teal-text">PENDING → PROCESSING</span>
+      </div>
+      <div class="action-row">
+        <button class="btn btn-ghost" (click)="resetAll()">New Transfer</button>
+        <button class="btn btn-primary">View History</button>
+      </div>
+    </div>
+
+    <!-- ══ STEP 1 — TYPE ══ -->
+    <div class="card-section" *ngIf="!submitted && state.step === 1">
+
+      <div class="section-head">
+        <div class="section-icon icon-gold">⇄</div>
+        <div class="section-head-text">
+          <h3>Select Transfer Type</h3>
+          <p>Choose how you want to send money</p>
+        </div>
+      </div>
+
+      <div class="section-body">
+
+        <div class="type-grid">
+
+          <div class="type-card"
+               [class.selected]="state.type === 'INTERNAL'"
+               (click)="selectType('INTERNAL')">
+            <div class="check">✓</div>
+            <span class="tc-icon">👤</span>
+            <div class="tc-name">Internal Transfer</div>
+            <div class="tc-desc">Send to another VeraFlow user. Instant settlement via ledger.</div>
+          </div>
+
+          <div class="type-card"
+               [class.selected]="state.type === 'EXTERNAL'"
+               (click)="selectType('EXTERNAL')">
+            <div class="check">✓</div>
+            <span class="tc-icon">🏦</span>
+            <div class="tc-name">External Transfer</div>
+            <div class="tc-desc">UPI, NEFT, IMPS, RTGS to any Indian bank account.</div>
+          </div>
+
+        </div>
+
+        <div class="warn-box">
+          <span class="warn-icon">⚡</span>
+          <div class="warn-text">
+            Internal transfers settle instantly via the VeraFlow ledger.
+            External transfers depend on the payment mode and banking hours.
+          </div>
+        </div>
+
+      </div>
+
+      <div class="actions">
+        <span class="kyc-badge">KYC Verified ✓</span>
+        <button class="btn btn-primary"
+                [disabled]="!step1Valid"
+                (click)="goStep(2)">
+          Continue →
+        </button>
+      </div>
+
+    </div>
+
+    <!-- ══ STEP 2 — DETAILS ══ -->
+    <div class="card-section" *ngIf="!submitted && state.step === 2">
+
+      <!-- ─ INTERNAL ─ -->
+      <ng-container *ngIf="state.type === 'INTERNAL'">
+
+        <div class="section-head">
+          <div class="section-icon icon-teal">👤</div>
+          <div class="section-head-text">
+            <h3>Internal Transfer</h3>
+            <p>Search recipient by username or account number</p>
+          </div>
+        </div>
+
+        <div class="section-body">
+
+          <!-- User search -->
+          <div class="field">
+            <label>Recipient Username</label>
+            <input type="text"
+                   [(ngModel)]="searchQuery"
+                   (ngModelChange)="onSearchInput()"
+                   placeholder="Search username or account..."
+                   autocomplete="off" />
+
+            <!-- Selected user chip -->
+            <div class="selected-chip" *ngIf="state.selectedUser">
+              <div class="chip-avatar"
+                   [style.background]="state.selectedUser.color + '22'"
+                   [style.color]="state.selectedUser.color">
+                {{ state.selectedUser.initials }}
+              </div>
+              <div class="chip-info">
+                <span class="chip-name">{{ state.selectedUser.username }}</span>
+                <span class="chip-acct">{{ state.selectedUser.acct }}</span>
+              </div>
+              <button class="chip-clear" (click)="clearUser()">✕</button>
+            </div>
+
+            <!-- Dropdown results -->
+            <div class="search-dropdown" *ngIf="showDropdown">
+              <div class="result-item"
+                   *ngFor="let user of filteredUsers"
+                   [class.selected]="state.selectedUser?.username === user.username"
+                   (click)="selectUser(user)">
+                <div class="ri-avatar"
+                     [style.background]="user.color + '22'"
+                     [style.color]="user.color">
+                  {{ user.initials }}
+                </div>
+                <div class="ri-info">
+                  <div class="ri-name">{{ user.username }}</div>
+                  <div class="ri-acct">{{ user.acct }}</div>
+                </div>
+                <span class="ri-check"
+                      *ngIf="state.selectedUser?.username === user.username">✓</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="divider"><span>Amount</span></div>
+
+          <div class="field">
+            <label>Transfer Amount</label>
+            <div class="amount-wrap">
+              <span class="currency">₹</span>
+              <input type="number"
+                     [(ngModel)]="state.internalAmount"
+                     placeholder="0.00"
+                     min="1" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Description (optional)</label>
+            <textarea [(ngModel)]="state.intDesc"
+                      placeholder="Add a note for this transfer..."></textarea>
+          </div>
+
+        </div>
+
+      </ng-container>
+
+      <!-- ─ EXTERNAL ─ -->
+      <ng-container *ngIf="state.type === 'EXTERNAL'">
+
+        <div class="section-head">
+          <div class="section-icon icon-blue">🏦</div>
+          <div class="section-head-text">
+            <h3>External Transfer</h3>
+            <p>Transfer to any Indian bank account</p>
+          </div>
+        </div>
+
+        <div class="section-body">
+
+          <!-- Mode tabs -->
+          <div class="field">
+            <label>Transfer Mode</label>
+            <div class="mode-tabs">
+              <div *ngFor="let m of ['UPI','NEFT','IMPS','RTGS']"
+                   class="mode-tab"
+                   [class.active]="state.mode === m"
+                   (click)="setMode(m)">
+                {{ m }}
+              </div>
+            </div>
+          </div>
+
+          <!-- UPI fields -->
+          <ng-container *ngIf="state.mode === 'UPI'">
+            <div class="field">
+              <label>Beneficiary Name</label>
+              <input type="text"
+                     [(ngModel)]="state.upiName"
+                     placeholder="Full name as per bank" />
+            </div>
+            <div class="field">
+              <label>UPI ID</label>
+              <input type="text"
+                     [(ngModel)]="state.upiId"
+                     placeholder="name@upi / name@oksbi" />
+            </div>
+          </ng-container>
+
+          <!-- Bank fields (NEFT / IMPS / RTGS) -->
+          <ng-container *ngIf="state.mode !== 'UPI'">
+            <div class="field">
+              <label>Beneficiary Name</label>
+              <input type="text"
+                     [(ngModel)]="state.bankName"
+                     placeholder="Full name as per bank" />
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label>Account Number</label>
+                <input type="text"
+                       [(ngModel)]="state.bankAcct"
+                       placeholder="Account number" />
+              </div>
+              <div class="field">
+                <label>IFSC Code</label>
+                <input type="text"
+                       [(ngModel)]="state.bankIfsc"
+                       placeholder="SBIN0001234"
+                       style="text-transform: uppercase" />
+              </div>
+            </div>
+          </ng-container>
+
+          <div class="divider"><span>Amount</span></div>
+
+          <div class="field">
+            <label>Transfer Amount</label>
+            <div class="amount-wrap">
+              <span class="currency">₹</span>
+              <input type="number"
+                     [(ngModel)]="state.externalAmount"
+                     placeholder="0.00"
+                     min="1" />
+            </div>
+            <span class="field-hint">{{ modeLimitText }}</span>
+          </div>
+
+          <div class="field">
+            <label>Description (optional)</label>
+            <textarea [(ngModel)]="state.extDesc"
+                      placeholder="Add a note or reference..."></textarea>
+          </div>
+
+        </div>
+
+      </ng-container>
+
+      <div class="actions">
+        <button class="btn btn-ghost" (click)="goStep(1)">← Back</button>
+        <button class="btn btn-primary"
+                [disabled]="!step2Valid"
+                (click)="goStep(3)">
+          Review →
+        </button>
+      </div>
+
+    </div>
+
+    <!-- ══ STEP 3 — REVIEW ══ -->
+    <div class="card-section" *ngIf="!submitted && state.step === 3">
+
+      <div class="section-head">
+        <div class="section-icon icon-gold">📋</div>
+        <div class="section-head-text">
+          <h3>Review Transfer</h3>
+          <p>Confirm all details before submitting</p>
+        </div>
+      </div>
+
+      <div class="section-body">
+
+        <div class="review-rows">
+
+          <div class="review-row">
+            <span class="rr-label">From Account</span>
+            <div class="rr-right">
+              <div class="rr-val">{{ currentUser }}</div>
+              <div class="rr-sub mono">{{ accountNumber }}</div>
+            </div>
+          </div>
+
+          <div class="review-row">
+            <span class="rr-label">To</span>
+            <div class="rr-right">
+              <div class="rr-val">{{ reviewReceiverName }}</div>
+              <div class="rr-sub mono">{{ reviewReceiverSub }}</div>
+            </div>
+          </div>
+
+          <div class="review-row">
+            <span class="rr-label">Transfer Type</span>
+            <span class="badge" [ngClass]="state.type === 'INTERNAL' ? 'badge-internal' : 'badge-external'">
+              <span class="badge-dot"></span>
+              {{ state.type === 'INTERNAL' ? 'Internal' : 'External · ' + state.mode }}
+            </span>
+          </div>
+
+          <div class="review-row">
+            <span class="rr-label">Transfer Amount</span>
+            <span class="rr-val rr-big">₹ {{ formatINR(reviewAmount) }}</span>
+          </div>
+
+          <div class="review-row">
+            <span class="rr-label">Platform Fee</span>
+            <span class="rr-val mono">₹ {{ formatINR(reviewFee) }}</span>
+          </div>
+
+          <div class="review-row">
+            <span class="rr-label">Total Debit</span>
+            <span class="rr-val mono red-text">₹ {{ formatINR(reviewTotal) }}</span>
+          </div>
+
+          <div class="review-row" *ngIf="reviewDesc">
+            <span class="rr-label">Note</span>
+            <span class="rr-val rr-note">{{ reviewDesc }}</span>
+          </div>
+
+          <div class="review-row">
+            <span class="rr-label">Ledger Entry</span>
+            <div class="rr-right ledger-entry">
+              <div>DEBIT &nbsp; your wallet</div>
+              <div>CREDIT {{ reviewCreditTarget }}</div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="warn-box">
+          <span class="warn-icon">🔒</span>
+          <div class="warn-text">
+            This transaction will be recorded in the immutable double-entry ledger.
+            A DEBIT entry will be posted to your account and a CREDIT entry to the receiver.
+            This action cannot be undone — only reversed.
+          </div>
+        </div>
+
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-ghost" (click)="goStep(2)">← Edit</button>
+        <button class="btn btn-success" (click)="submitTransaction()">
+          Confirm & Submit ✓
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="sec-footer">🔒 256-bit encrypted · Ledger-backed · RBI compliant</div>
+
+</main>
