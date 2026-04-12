@@ -1,0 +1,137 @@
+<div class="fd-page">
+
+  <!-- HEADER -->
+  <div class="fd-header">
+    <div>
+      <h1 class="fd-title">Fraud Risk Dashboard</h1>
+      <span class="fd-subtitle">Real-time monitoring</span>
+    </div>
+
+    <div>
+      <span class="fd-refresh-label">
+        Last updated {{ lastRefreshed | date:'HH:mm:ss' }}
+      </span>
+
+      <button class="fd-btn" (click)="loadAll()">Refresh</button>
+    </div>
+  </div>
+
+  <!-- METRICS -->
+  <div class="fd-metrics" *ngIf="summary; else loader">
+
+    <div class="fd-metric">
+      <div>Total Transactions</div>
+      <div class="fd-metric__value">
+        {{ summary.totalTransactionsToday }}
+      </div>
+    </div>
+
+    <div class="fd-metric">
+      <div>Flagged</div>
+      <div class="fd-metric__value">
+        {{ summary.flaggedToday }}
+      </div>
+    </div>
+
+    <div class="fd-metric">
+      <div>Noisy Accounts</div>
+      <div class="fd-metric__value">
+        {{ summary.noisyAccounts }}
+      </div>
+    </div>
+
+    <div class="fd-metric">
+      <div>Avg Score</div>
+      <div class="fd-metric__value">
+        {{ summary.avgRiskScoreToday }}
+      </div>
+    </div>
+
+  </div>
+
+  <ng-template #loader>
+    <div>Loading...</div>
+  </ng-template>
+
+  <!-- GRID -->
+  <div class="fd-grid">
+
+    <!-- TRANSACTIONS -->
+    <div class="fd-card">
+
+      <div class="fd-card__header">
+        <span>Transactions</span>
+
+        <div>
+          <button
+            *ngFor="let f of txnFilters"
+            class="fd-btn"
+            [class.fd-active]="txnFilter === f.value"
+            (click)="setTxnFilter(f.value)">
+            {{ f.label }}
+          </button>
+        </div>
+      </div>
+
+      <div class="fd-card__body">
+
+        <div *ngFor="let txn of transactions" class="fd-txn-row">
+
+          <div>
+            <div>{{ txn.senderAccountNumber }}</div>
+            <div>{{ txn.evaluatedAt }}</div>
+          </div>
+
+          <div>
+            <span class="fd-badge" [ngClass]="riskBadgeClass(txn.riskLevel)">
+              {{ txn.riskLevel }}
+            </span>
+
+            <div>{{ txn.riskScore }}</div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ACCOUNTS -->
+    <div class="fd-card">
+
+      <div class="fd-card__header">
+        <span>Accounts</span>
+
+        <div>
+          <button
+            *ngFor="let f of acctFilters"
+            class="fd-btn"
+            [class.fd-active]="acctFilter === f.value"
+            (click)="setAcctFilter(f.value)">
+            {{ f.label }}
+          </button>
+        </div>
+      </div>
+
+      <div class="fd-card__body">
+
+        <div *ngFor="let acct of accounts" class="fd-acct-row">
+
+          <div>
+            <div>{{ acct.accountNumber }}</div>
+            <div>{{ acct.totalEvaluations }} evals</div>
+          </div>
+
+          <div>
+            <span class="fd-badge" [ngClass]="noiseBadgeClass(acct.noiseLevel)">
+              {{ acct.noiseLevel }}
+            </span>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+</div>

@@ -1,0 +1,127 @@
+.fd-page {
+  padding: 24px;
+  background: #f6f8fb;
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+}
+
+/* HEADER */
+.fd-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.fd-title {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.fd-subtitle {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.fd-btn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  background: white;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.fd-btn:hover {
+  background: #f3f4f6;
+}
+
+/* METRICS */
+.fd-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.fd-metric {
+  background: white;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.fd-metric__value {
+  font-size: 26px;
+  font-weight: bold;
+}
+
+/* GRID */
+.fd-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* CARD */
+.fd-card {
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+}
+
+.fd-card__header {
+  padding: 12px 16px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+}
+
+.fd-card__body {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+/* ROWS */
+.fd-txn-row,
+.fd-acct-row {
+  padding: 12px 16px;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+}
+
+.fd-txn-row:hover,
+.fd-acct-row:hover {
+  background: #f9fafb;
+}
+
+/* BADGES */
+.fd-badge {
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+}
+
+.fd-badge--low {
+  background: #dcfce7;
+}
+
+.fd-badge--medium {
+  background: #fef3c7;
+}
+
+.fd-badge--high {
+  background: #fed7aa;
+}
+
+.fd-badge--critical {
+  background: #fecaca;
+}
+
+/* EMPTY */
+.fd-empty {
+  padding: 30px;
+  text-align: center;
+  color: gray;
+}

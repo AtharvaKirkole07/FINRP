@@ -7,6 +7,7 @@ import { KycApplicationResolver } from './resolver/kycapplication.resolver';
 import { ApprovalApplications } from './approval-applications/approval-applications';
 import { KycLevel2ApplicationResolver } from './resolver/kycLevel2Application.resolver';
 import { KycApproval } from './kyc-approver/kyc-approver';
+import { RiskDashboard } from './risk-dashboard/risk-dashboard';
 
 const routes: Routes = [
    { path: 'kycprocess', component: KycUserProcesspageComponent },
@@ -22,6 +23,7 @@ const routes: Routes = [
      },
 
         { path: 'kycfinalprocess', component: KycApproval },
+         { path: 'riskdashboard', component: RiskDashboard },
 
 
 

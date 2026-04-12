@@ -1,5 +1,5 @@
 <!-- ══════════════════════════════════════════════════════════
-     transaction-initiate.component.html
+     transaction-user.html
      ══════════════════════════════════════════════════════════ -->
 
 <!-- TOPBAR -->
@@ -81,13 +81,19 @@
     <div class="success-screen" *ngIf="submitted">
       <div class="success-ring">✓</div>
       <div>
-        <h3 class="success-title">Transfer Initiated</h3>
-        <p class="success-sub">Your transaction is in the ledger queue</p>
+       <h3 class="success-title">
+  {{ state.type === 'EXTERNAL' ? 'Transfer Initiated' : 'Transfer Completed' }}
+</h3>
+
+<p class="success-sub">
+  {{ state.type === 'EXTERNAL' 
+      ? 'Your transaction is being processed by bank' 
+      : 'Transaction Successful' }}
+</p>
       </div>
       <div class="success-ref">REF: {{ referenceId }}</div>
       <div class="success-detail">
         ₹ {{ formatINR(reviewAmount) }} → {{ reviewReceiverName }}<br>
-        Status: <span class="teal-text">PENDING → PROCESSING</span>
       </div>
       <div class="action-row">
         <button class="btn btn-ghost" (click)="resetAll()">New Transfer</button>
@@ -107,7 +113,6 @@
       </div>
 
       <div class="section-body">
-
         <div class="type-grid">
 
           <div class="type-card"
@@ -137,7 +142,6 @@
             External transfers depend on the payment mode and banking hours.
           </div>
         </div>
-
       </div>
 
       <div class="actions">
@@ -167,7 +171,6 @@
 
         <div class="section-body">
 
-          <!-- User search -->
           <div class="field">
             <label>Recipient Username</label>
             <input type="text"
@@ -251,7 +254,7 @@
           <div class="field">
             <label>Transfer Mode</label>
             <div class="mode-tabs">
-              <div *ngFor="let m of ['UPI','NEFT','IMPS','RTGS']"
+              <div *ngFor="let m of modes"
                    class="mode-tab"
                    [class.active]="state.mode === m"
                    (click)="setMode(m)">
@@ -369,7 +372,8 @@
 
           <div class="review-row">
             <span class="rr-label">Transfer Type</span>
-            <span class="badge" [ngClass]="state.type === 'INTERNAL' ? 'badge-internal' : 'badge-external'">
+            <span class="badge"
+                  [ngClass]="state.type === 'INTERNAL' ? 'badge-internal' : 'badge-external'">
               <span class="badge-dot"></span>
               {{ state.type === 'INTERNAL' ? 'Internal' : 'External · ' + state.mode }}
             </span>
@@ -398,7 +402,7 @@
           <div class="review-row">
             <span class="rr-label">Ledger Entry</span>
             <div class="rr-right ledger-entry">
-              <div>DEBIT &nbsp; your wallet</div>
+              <div>DEBIT &nbsp;&nbsp; your wallet</div>
               <div>CREDIT {{ reviewCreditTarget }}</div>
             </div>
           </div>
@@ -418,9 +422,11 @@
 
       <div class="actions">
         <button class="btn btn-ghost" (click)="goStep(2)">← Edit</button>
-        <button class="btn btn-success" (click)="submitTransaction()">
-          Confirm & Submit ✓
-        </button>
+        <button class="btn btn-success"
+        [disabled]="isProcessing"
+        (click)="submitTransaction()">
+  {{ isProcessing ? 'Initiating...' : 'Confirm & Submit ✓' }}
+</button>
       </div>
 
     </div>
