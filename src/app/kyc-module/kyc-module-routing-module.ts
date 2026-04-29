@@ -9,8 +9,10 @@ import { KycLevel2ApplicationResolver } from './resolver/kycLevel2Application.re
 import { KycApproval } from './kyc-approver/kyc-approver';
 import { RiskDashboard } from './risk-dashboard/risk-dashboard';
 
+
 const routes: Routes = [
    { path: 'kycprocess', component: KycUserProcesspageComponent },
+  //Parent path here 
    {
     path: 'kycapplication',
     component: KycIncomingComponent,
