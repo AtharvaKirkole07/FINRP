@@ -1,137 +1,243 @@
-<div class="fd-page">
+<div class="rd-page">
 
-  <!-- HEADER -->
-  <div class="fd-header">
-    <div>
-      <h1 class="fd-title">Fraud Risk Dashboard</h1>
-      <span class="fd-subtitle">Real-time monitoring</span>
+  <!-- ═══ HEADER ════════════════════════════════════════════════════════════ -->
+  <header class="rd-header">
+    <div class="rd-header__left">
+      <div class="rd-header__icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="rd-header__title">Fraud Risk Dashboard</h1>
+        <span class="rd-header__sub">Real-time transaction monitoring</span>
+      </div>
     </div>
 
-    <div>
-      <span class="fd-refresh-label">
-        Last updated {{ lastRefreshed | date:'HH:mm:ss' }}
+    <div class="rd-header__right">
+      <div class="rd-pulse-dot" [class.rd-pulse-dot--loading]="isAnyLoading"></div>
+      <span class="rd-timestamp">
+        Updated {{ lastRefreshed | date:'HH:mm:ss' }}
       </span>
-
-      <button class="fd-btn" (click)="loadAll()">Refresh</button>
+      <button class="rd-refresh-btn" (click)="loadAll()" [disabled]="isAnyLoading">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+             [class.rd-spin]="isAnyLoading">
+          <path d="M23 4v6h-6M1 20v-6h6"/>
+          <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+        </svg>
+        Refresh
+      </button>
     </div>
-  </div>
+  </header>
 
-  <!-- METRICS -->
-  <div class="fd-metrics" *ngIf="summary; else loader">
+  <!-- ═══ METRICS ══════════════════════════════════════════════════════════ -->
+  <section class="rd-metrics">
 
-    <div class="fd-metric">
-      <div>Total Transactions</div>
-      <div class="fd-metric__value">
-        {{ summary.totalTransactionsToday }}
+    <ng-container *ngIf="summary && !loading.summary; else metricSkeleton">
+
+      <div class="rd-metric rd-metric--blue">
+        <div class="rd-metric__icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+          </svg>
+        </div>
+        <div class="rd-metric__label">Total Transactions</div>
+        <div class="rd-metric__value">{{ summary.totalTransactionsToday | number }}</div>
+        <div class="rd-metric__tag">Today</div>
       </div>
-    </div>
 
-    <div class="fd-metric">
-      <div>Flagged</div>
-      <div class="fd-metric__value">
-        {{ summary.flaggedToday }}
+      <div class="rd-metric rd-metric--amber">
+        <div class="rd-metric__icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        </div>
+        <div class="rd-metric__label">Flagged</div>
+        <div class="rd-metric__value">{{ summary.flaggedToday | number }}</div>
+        <div class="rd-metric__tag">Requires review</div>
       </div>
-    </div>
 
-    <div class="fd-metric">
-      <div>Noisy Accounts</div>
-      <div class="fd-metric__value">
-        {{ summary.noisyAccounts }}
+      <div class="rd-metric rd-metric--red">
+        <div class="rd-metric__icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+          </svg>
+        </div>
+        <div class="rd-metric__label">Noisy Accounts</div>
+        <div class="rd-metric__value">{{ summary.noisyAccounts | number }}</div>
+        <div class="rd-metric__tag">High frequency</div>
       </div>
-    </div>
 
-    <div class="fd-metric">
-      <div>Avg Score</div>
-      <div class="fd-metric__value">
-        {{ summary.avgRiskScoreToday }}
+      <div class="rd-metric rd-metric--teal">
+        <div class="rd-metric__icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          </svg>
+        </div>
+        <div class="rd-metric__label">Avg Risk Score</div>
+        <div class="rd-metric__value">{{ summary.avgRiskScoreToday | number:'1.0-1' }}</div>
+        <div class="rd-metric__tag">Score / 100</div>
       </div>
-    </div>
 
-  </div>
+    </ng-container>
 
-  <ng-template #loader>
-    <div>Loading...</div>
-  </ng-template>
+    <ng-template #metricSkeleton>
+      <div class="rd-metric rd-skeleton" *ngFor="let i of [1,2,3,4]">
+        <div class="rd-skel rd-skel--sm"></div>
+        <div class="rd-skel rd-skel--lg"></div>
+        <div class="rd-skel rd-skel--xs"></div>
+      </div>
+    </ng-template>
 
-  <!-- GRID -->
-  <div class="fd-grid">
+  </section>
 
-    <!-- TRANSACTIONS -->
-    <div class="fd-card">
+  <!-- ═══ GRID ══════════════════════════════════════════════════════════════ -->
+  <div class="rd-grid">
 
-      <div class="fd-card__header">
-        <span>Transactions</span>
+    <!-- TRANSACTIONS ─────────────────────────────────────────────────────── -->
+    <div class="rd-card">
 
-        <div>
+      <div class="rd-card__header">
+        <div class="rd-card__title">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+            <polyline points="17 6 23 6 23 12"/>
+          </svg>
+          Transactions
+          <span class="rd-count-badge" *ngIf="!loading.transactions">{{ transactions.length }}</span>
+        </div>
+
+        <div class="rd-filters">
           <button
             *ngFor="let f of txnFilters"
-            class="fd-btn"
-            [class.fd-active]="txnFilter === f.value"
+            class="rd-filter-btn"
+            [class.rd-filter-btn--active]="txnFilter === f.value"
             (click)="setTxnFilter(f.value)">
             {{ f.label }}
           </button>
         </div>
       </div>
 
-      <div class="fd-card__body">
-
-        <div *ngFor="let txn of transactions" class="fd-txn-row">
-
+      <!-- Loading skeleton -->
+      <div *ngIf="loading.transactions" class="rd-card__body">
+        <div class="rd-row rd-skeleton-row" *ngFor="let i of [1,2,3,4,5]">
           <div>
-            <div>{{ txn.senderAccountNumber }}</div>
-            <div>{{ txn.evaluatedAt }}</div>
+            <div class="rd-skel rd-skel--md"></div>
+            <div class="rd-skel rd-skel--xs" style="margin-top:6px"></div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <div class="rd-skel rd-skel--badge"></div>
+            <div class="rd-skel rd-skel--sm"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Data rows -->
+      <div class="rd-card__body" *ngIf="!loading.transactions">
+
+        <div class="rd-empty" *ngIf="transactions.length === 0">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <div>No transactions found</div>
+        </div>
+
+        <div *ngFor="let txn of transactions" class="rd-row rd-txn-row">
+
+          <div class="rd-row__left">
+            <div class="rd-account-num">{{ txn.senderAccountNumber }}</div>
+            <div class="rd-time">{{ relativeTime(txn.evaluatedAt) }}</div>
           </div>
 
-          <div>
-            <span class="fd-badge" [ngClass]="riskBadgeClass(txn.riskLevel)">
+          <div class="rd-row__center">
+            <div class="rd-score-bar-wrap">
+              <div class="rd-score-bar-track">
+                <div class="rd-score-bar-fill"
+                     [style.width]="scoreBarWidth(txn.riskScore)"
+                     [style.background]="scoreBarColor(txn.riskScore)">
+                </div>
+              </div>
+              <span class="rd-score-num">{{ txn.riskScore }}</span>
+            </div>
+          </div>
+
+          <div class="rd-row__right">
+            <span class="badge" [ngClass]="riskBadgeClass(txn.riskLevel)">
               {{ txn.riskLevel }}
             </span>
-
-            <div>{{ txn.riskScore }}</div>
+            <span class="rd-flagged-dot" *ngIf="txn.isFlagged" title="Flagged">&#9679;</span>
           </div>
 
         </div>
-
       </div>
+
     </div>
 
-    <!-- ACCOUNTS -->
-    <div class="fd-card">
+    <!-- ACCOUNTS ─────────────────────────────────────────────────────────── -->
+    <div class="rd-card">
 
-      <div class="fd-card__header">
-        <span>Accounts</span>
+      <div class="rd-card__header">
+        <div class="rd-card__title">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+          </svg>
+          Accounts
+          <span class="rd-count-badge" *ngIf="!loading.accounts">{{ accounts.length }}</span>
+        </div>
 
-        <div>
+        <div class="rd-filters">
           <button
             *ngFor="let f of acctFilters"
-            class="fd-btn"
-            [class.fd-active]="acctFilter === f.value"
+            class="rd-filter-btn"
+            [class.rd-filter-btn--active]="acctFilter === f.value"
             (click)="setAcctFilter(f.value)">
             {{ f.label }}
           </button>
         </div>
       </div>
 
-      <div class="fd-card__body">
-
-        <div *ngFor="let acct of accounts" class="fd-acct-row">
-
+      <!-- Loading skeleton -->
+      <div *ngIf="loading.accounts" class="rd-card__body">
+        <div class="rd-row rd-skeleton-row" *ngFor="let i of [1,2,3,4,5]">
           <div>
-            <div>{{ acct.accountNumber }}</div>
-            <div>{{ acct.totalEvaluations }} evals</div>
+            <div class="rd-skel rd-skel--md"></div>
+            <div class="rd-skel rd-skel--xs" style="margin-top:6px"></div>
+          </div>
+          <div class="rd-skel rd-skel--badge"></div>
+        </div>
+      </div>
+
+      <!-- Data rows -->
+      <div class="rd-card__body" *ngIf="!loading.accounts">
+
+        <div class="rd-empty" *ngIf="accounts.length === 0">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+          </svg>
+          <div>No accounts found</div>
+        </div>
+
+        <div *ngFor="let acct of accounts" class="rd-row rd-acct-row">
+
+          <div class="rd-row__left">
+            <div class="rd-account-num">{{ acct.accountNumber }}</div>
+            <div class="rd-time">{{ acct.totalEvaluations }} evaluations</div>
           </div>
 
-          <div>
-            <span class="fd-badge" [ngClass]="noiseBadgeClass(acct.noiseLevel)">
+          <div class="rd-row__right">
+            <span class="badge" [ngClass]="noiseBadgeClass(acct.noiseLevel)">
               {{ acct.noiseLevel }}
             </span>
           </div>
 
         </div>
-
       </div>
+
     </div>
 
   </div>
-
 </div>

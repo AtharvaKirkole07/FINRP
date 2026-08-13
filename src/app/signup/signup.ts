@@ -18,6 +18,7 @@ export class SignupComponent {
 
   form: SignupRequest = {
     username: '',
+    name:'',
     email: '',
     password: ''
   };
@@ -39,7 +40,7 @@ export class SignupComponent {
     this.errorMessage = '';
     this.successMessage = '';
 
-    if (!this.form.username || !this.form.email || !this.form.password) {
+    if (!this.form.username || !this.form.email || !this.form.password || !this.form.name) {
       this.errorMessage = 'All fields are required.';
       return;
     }

@@ -6,6 +6,7 @@ import { Observable } from 'rxjs';
 
 export interface SignupRequest {
   username: string;
+  name:string,
   email: string;
   password: string;
 }

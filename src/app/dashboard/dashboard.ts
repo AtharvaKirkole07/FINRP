@@ -12,7 +12,10 @@ import { Router } from '@angular/router';
 export class DashboardComponent {
 
   modules = [
-    { name: 'KYC Management', icon: '👤', link: 'kyc/kycapplication' },
+    { name: 'KYC L1 Applications', icon: '👤', link: 'kyc/kycapplication' },
+    { name: 'KYC L2 Applications', icon: '👤', link: 'kyc/kycapproval' },
+    { name: 'KYC Reports', icon: '👤', link: '/report/reports' },
+    { name: 'KYC Risk Dashboard', icon: '👤', link: '/risk/riskdashboard' },
   ];
 
   constructor(private router: Router) {}   // ← inject Router

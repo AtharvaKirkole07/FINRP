@@ -27,6 +27,23 @@ export const routes: Routes = [
       import('./userpages/userpages-module')
         .then(m => m.UserpagesModule)
   },
+  {
+    path: 'report',
+    canActivate: [AuthGuard],          // protects ALL /user/* children
+    loadChildren: () =>
+      import('./Reporting/transaction-reports/Config/transaction-reports.module')
+        .then(m => m.TransactionReportingModule)
+  },
+
+   {
+    path: 'risk',
+    canActivate: [AuthGuard],          // protects ALL /user/* children
+    loadChildren: () =>
+      import('./kyc-module/kyc-module-module')
+            .then(m => m.KycModuleModule)
+  },
+
+
 
   { path: '', redirectTo: 'login', pathMatch: 'full' }
 ];

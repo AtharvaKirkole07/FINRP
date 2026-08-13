@@ -3,8 +3,9 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { KycService } from '../serviceInterface/KycService';
-import { AuthService } from '../../login/serviceinterface/auth.service'; 
-import { finalize } from 'rxjs/operators';
+import { AuthService } from '../../login/serviceinterface/auth.service';
+import { finalize, timeout } from 'rxjs/operators';
+import { TimeoutError } from 'rxjs';
 
 @Component({
   selector: 'app-userkycpage',
@@ -18,7 +19,7 @@ export class Userkycpage implements OnInit {
   isSubmitting = false;
   submitError  = '';
   submitSuccess = '';
-  userId: number | null = null;   // ← no longer hardcoded
+  userId: number | null = null;
 
   kycForm = {
     fullName: '',
@@ -48,25 +49,18 @@ export class Userkycpage implements OnInit {
 
   constructor(
     private kycService:  KycService,
-    private authService: AuthService   // ← inject AuthService
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
     const username = this.authService.getLoggedInUsername();
-
     if (!username) {
       this.submitError = 'Session expired. Please login again.';
       return;
     }
-
-    // fetch real userId from KYC service using logged-in username
     this.kycService.getIdByUsername(username).subscribe({
-      next: (id) => {
-        this.userId = id;
-      },
-      error: () => {
-        this.submitError = 'Could not load user profile. Please try again.';
-      }
+      next: (id) => { this.userId = id; },
+      error: () => { this.submitError = 'Could not load user profile. Please try again.'; }
     });
   }
 
@@ -88,41 +82,81 @@ export class Userkycpage implements OnInit {
     }
   }
 
- submitKyc() {
-  this.submitError = '';
-  this.submitSuccess = '';
+  submitKyc() {
+    this.submitError  = '';
+    this.submitSuccess = '';
 
-  if (this.userId === null) {
-    this.submitError = 'User profile not loaded yet. Please wait.';
-    return;
-  }
+    if (this.userId === null) {
+      this.submitError = 'User profile not loaded yet. Please wait.';
+      return;
+    }
 
-  if (!this.kycForm.fullName || !this.kycForm.pan || !this.kycForm.aadhaar) {
-    this.submitError = 'Please fill Full Name, PAN and Aadhaar fields.';
-    return;
-  }
+    if (!this.kycForm.fullName || !this.kycForm.pan || !this.kycForm.aadhaar) {
+      this.submitError = 'Please fill Full Name, PAN and Aadhaar fields.';
+      return;
+    }
 
-  this.isSubmitting = true;
+    this.isSubmitting = true;
 
-  this.kycService.submitKyc(this.kycForm, this.documents, this.userId)
-    .pipe(
-      finalize(() => {
-        this.isSubmitting = false;   // ✅ always runs
-      })
-    )
-    .subscribe({
-      next: (response) => {
-        if (response.success === false) {
-          this.submitError = response.message;
-          return;
+    this.kycService.submitKyc(this.kycForm, this.documents, this.userId)
+      .pipe(
+        timeout(20000),           // 20s safety net
+        finalize(() => {
+          this.isSubmitting = false;   // always fires — button always unlocks
+        })
+      )
+      .subscribe({
+        next: (response) => {
+          // 200 OK received from backend
+          if (response.success === true) {
+            this.submitSuccess = `KYC submitted! Application ID: ${response.applicationId}`;
+            this.currentStep = 3;
+            this.resetForm();
+          } else {
+            // 200 OK but backend reported logical failure
+            this.submitError = response.message || 'Submission failed. Please try again.';
+          }
+        },
+        error: (err) => {
+          if (err instanceof TimeoutError) {
+            this.submitError = 'Request timed out. Please check your connection and try again.';
+          } else if (err.status === 400) {
+            // backend BadRequest — validation error
+            this.submitError = err.error?.message || 'Invalid data submitted.';
+          } else if (err.status === 500) {
+            this.submitError = 'Server error. Please try again later.';
+          } else {
+            this.submitError = err.error?.message || 'Submission failed. Please try again.';
+          }
         }
+      });
+  }
 
-        this.submitSuccess = `KYC submitted! Application ID: ${response.applicationId}`;
-        this.currentStep = 3;  // ✅ move to success screen
-      },
-      error: (err) => {
-        this.submitError = err.error?.message || 'Submission failed. Please try again.';
-      }
-    });
-}
+  private resetForm() {
+    this.kycForm = {
+      fullName: '',
+      dob:      '',
+      email:    '',
+      mobile:   '',
+      pan:      '',
+      aadhaar:  '',
+      address:  ''
+    };
+
+    this.documents = {
+      panCard:         null,
+      aadhaarFront:    null,
+      aadhaarBack:     null,
+      selfie:          null,
+      electricityBill: null
+    };
+
+    this.uploadedFiles = {
+      panCard:         null,
+      aadhaarFront:    null,
+      aadhaarBack:     null,
+      selfie:          null,
+      electricityBill: null
+    };
+  }
 }

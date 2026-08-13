@@ -1,0 +1,412 @@
+<div class="rp-page">
+
+  <!-- ── Page header ───────────────────────────────────────────────── -->
+  <div class="rp-header">
+    <div>
+      <h1 class="rp-title">Transaction reports</h1>
+      <p class="rp-subtitle">
+        Generate and export transaction data by account, date range, type, or status
+      </p>
+    </div>
+    <button
+      class="rp-btn rp-btn--outline"
+      *ngIf="generated"
+      (click)="resetFilters()">
+      Reset
+    </button>
+  </div>
+
+  <!-- ── Filter panel ──────────────────────────────────────────────── -->
+  <div class="rp-filter-panel">
+
+    <div class="rp-filter-panel__title">Report filters</div>
+
+    <div class="rp-filter-grid">
+
+      <!-- Account number -->
+      <div class="rp-field">
+        <label class="rp-label">Account number</label>
+        <input
+          class="rp-input"
+          type="text"
+          placeholder="e.g. AC-111 (leave empty for all)"
+          [(ngModel)]="accountNumber" />
+      </div>
+
+      <!-- Date mode selector -->
+      <div class="rp-field">
+        <label class="rp-label">Date filter type</label>
+        <div class="rp-toggle-group">
+          <button
+            *ngFor="let m of dateModes"
+            class="rp-toggle-btn"
+            [class.rp-toggle-btn--active]="dateMode === m.value"
+            (click)="dateMode = m.value">
+            {{ m.label }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Date range inputs -->
+      <ng-container [ngSwitch]="dateMode">
+
+        <!-- Range -->
+        <ng-container *ngSwitchCase="'range'">
+          <div class="rp-field">
+            <label class="rp-label">From date</label>
+            <input class="rp-input" type="date" [(ngModel)]="fromDate" />
+          </div>
+          <div class="rp-field">
+            <label class="rp-label">To date</label>
+            <input class="rp-input" type="date" [(ngModel)]="toDate" />
+          </div>
+        </ng-container>
+
+        <!-- Single day -->
+        <ng-container *ngSwitchCase="'day'">
+          <div class="rp-field">
+            <label class="rp-label">Day</label>
+            <select class="rp-select" [(ngModel)]="day">
+              <option [ngValue]="null">-- Day --</option>
+              <option *ngFor="let d of days" [ngValue]="d">{{ d }}</option>
+            </select>
+          </div>
+          <div class="rp-field">
+            <label class="rp-label">Month</label>
+            <select class="rp-select" [(ngModel)]="month">
+              <option *ngFor="let m of months" [ngValue]="m.value">{{ m.label }}</option>
+            </select>
+          </div>
+          <div class="rp-field">
+            <label class="rp-label">Year</label>
+            <select class="rp-select" [(ngModel)]="year">
+              <option *ngFor="let y of years" [ngValue]="y">{{ y }}</option>
+            </select>
+          </div>
+        </ng-container>
+
+        <!-- Month -->
+        <ng-container *ngSwitchCase="'month'">
+          <div class="rp-field">
+            <label class="rp-label">Month</label>
+            <select class="rp-select" [(ngModel)]="month">
+              <option *ngFor="let m of months" [ngValue]="m.value">{{ m.label }}</option>
+            </select>
+          </div>
+          <div class="rp-field">
+            <label class="rp-label">Year</label>
+            <select class="rp-select" [(ngModel)]="year">
+              <option *ngFor="let y of years" [ngValue]="y">{{ y }}</option>
+            </select>
+          </div>
+        </ng-container>
+
+        <!-- Year -->
+        <ng-container *ngSwitchCase="'year'">
+          <div class="rp-field">
+            <label class="rp-label">Year</label>
+            <select class="rp-select" [(ngModel)]="year">
+              <option *ngFor="let y of years" [ngValue]="y">{{ y }}</option>
+            </select>
+          </div>
+        </ng-container>
+
+      </ng-container>
+
+      <!-- Transaction type -->
+      <div class="rp-field">
+        <label class="rp-label">Transaction type</label>
+        <select class="rp-select" [(ngModel)]="transactionType">
+          <option *ngFor="let t of typeOptions" [ngValue]="t.value">{{ t.label }}</option>
+        </select>
+      </div>
+
+      <!-- Status -->
+      <div class="rp-field">
+        <label class="rp-label">Status</label>
+        <select class="rp-select" [(ngModel)]="status">
+          <option *ngFor="let s of statusOptions" [ngValue]="s.value">{{ s.label }}</option>
+        </select>
+      </div>
+
+      <!-- Group by -->
+      <div class="rp-field">
+        <label class="rp-label">Group breakdown by</label>
+        <div class="rp-toggle-group">
+          <button
+            *ngFor="let g of groupByOptions"
+            class="rp-toggle-btn"
+            [class.rp-toggle-btn--active]="groupBy === g.value"
+            (click)="groupBy = g.value">
+            {{ g.label }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Flagged only toggle -->
+      <div class="rp-field rp-field--checkbox">
+        <label class="rp-checkbox-label">
+          <input type="checkbox" [(ngModel)]="flaggedOnly" />
+          <span>Flagged transactions only</span>
+        </label>
+      </div>
+
+    </div>
+
+    <!-- Action row -->
+    <div class="rp-filter-actions">
+      <button
+        class="rp-btn rp-btn--primary"
+        [disabled]="loading"
+        (click)="generate()">
+        <svg *ngIf="!loading" width="14" height="14" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        <span class="rp-spinner" *ngIf="loading"></span>
+        {{ loading ? 'Generating…' : 'Generate report' }}
+      </button>
+
+      <button
+        class="rp-btn rp-btn--outline"
+        [disabled]="!report || downloading"
+        (click)="download()">
+        <svg *ngIf="!downloading" width="14" height="14" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        <span class="rp-spinner" *ngIf="downloading"></span>
+        {{ downloading ? 'Downloading…' : 'Download CSV' }}
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ── Error ──────────────────────────────────────────────────────── -->
+  <div class="rp-error" *ngIf="errorMsg">{{ errorMsg }}</div>
+
+  <!-- ── Report output ─────────────────────────────────────────────── -->
+  <ng-container *ngIf="report">
+
+    <!-- Report meta bar -->
+    <div class="rp-meta-bar">
+      <span class="rp-meta-item">
+        Period:
+        <strong>{{ report.fromDate | date:'dd MMM yyyy' }}
+        – {{ report.toDate | date:'dd MMM yyyy' }}</strong>
+      </span>
+      <span class="rp-meta-item" *ngIf="report.accountNumber">
+        Account: <strong>{{ report.accountNumber }}</strong>
+      </span>
+      <span class="rp-meta-item">
+        Grouped: <strong>{{ report.groupBy | titlecase }}</strong>
+      </span>
+      <span class="rp-meta-item">
+        Total rows: <strong>{{ report.transactions.length }}</strong>
+      </span>
+    </div>
+
+    <!-- Summary cards -->
+    <div class="rp-summary-grid">
+
+      <div class="rp-metric">
+        <span class="rp-metric__label">Total transactions</span>
+        <span class="rp-metric__value">{{ report.summary.totalCount }}</span>
+        <span class="rp-metric__sub">{{ formatINR(report.summary.totalAmount) }}</span>
+      </div>
+
+      <div class="rp-metric rp-metric--internal">
+        <span class="rp-metric__label">Internal</span>
+        <span class="rp-metric__value">{{ report.summary.internalCount }}</span>
+        <span class="rp-metric__sub">{{ formatINR(report.summary.internalAmount) }}</span>
+      </div>
+
+      <div class="rp-metric rp-metric--external">
+        <span class="rp-metric__label">External</span>
+        <span class="rp-metric__value">{{ report.summary.externalCount }}</span>
+        <span class="rp-metric__sub">{{ formatINR(report.summary.externalAmount) }}</span>
+      </div>
+
+      <div class="rp-metric rp-metric--flagged">
+        <span class="rp-metric__label">Flagged</span>
+        <span class="rp-metric__value">{{ report.summary.flaggedCount }}</span>
+        <span class="rp-metric__sub">{{ formatINR(report.summary.flaggedAmount) }}</span>
+      </div>
+
+      <div class="rp-metric">
+        <span class="rp-metric__label">Completed</span>
+        <span class="rp-metric__value rp-metric__value--success">
+          {{ report.summary.completedCount }}
+        </span>
+      </div>
+
+      <div class="rp-metric">
+        <span class="rp-metric__label">Pending</span>
+        <span class="rp-metric__value rp-metric__value--warning">
+          {{ report.summary.pendingCount }}
+        </span>
+      </div>
+
+      <div class="rp-metric">
+        <span class="rp-metric__label">Blocked</span>
+        <span class="rp-metric__value rp-metric__value--danger">
+          {{ report.summary.blockedCount }}
+        </span>
+      </div>
+
+      <div class="rp-metric">
+        <span class="rp-metric__label">Avg amount</span>
+        <span class="rp-metric__value">
+          {{ formatINR(report.summary.avgTransactionAmount) }}
+        </span>
+        <span class="rp-metric__sub">
+          Max {{ formatINR(report.summary.maxTransactionAmount) }}
+        </span>
+      </div>
+
+    </div>
+
+    <!-- Period breakdown table -->
+    <div class="rp-card" *ngIf="report.breakdown.length > 0">
+      <div class="rp-card__title">Period breakdown</div>
+      <div class="rp-table-wrapper">
+        <table class="rp-table">
+          <thead>
+            <tr>
+              <th>Period</th>
+              <th>Count</th>
+              <th>Total amount</th>
+              <th>Internal</th>
+              <th>External</th>
+              <th>Flagged</th>
+              <th>Flagged amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of report.breakdown">
+              <td><strong>{{ row.period }}</strong></td>
+              <td>{{ row.count }}</td>
+              <td>{{ formatINR(row.totalAmount) }}</td>
+              <td>{{ row.internalCount }}</td>
+              <td>{{ row.externalCount }}</td>
+              <td>
+                <span *ngIf="row.flaggedCount > 0" class="badge badge--danger">
+                  {{ row.flaggedCount }}
+                </span>
+                <span *ngIf="row.flaggedCount === 0" class="rp-zero">0</span>
+              </td>
+              <td>{{ formatINR(row.flaggedAmount) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Transaction rows table -->
+    <div class="rp-card">
+      <div class="rp-card__header">
+        <span class="rp-card__title">All transactions</span>
+        <input
+          class="rp-input rp-input--search"
+          type="text"
+          placeholder="Search by reference ID or account…"
+          [(ngModel)]="searchText" />
+      </div>
+
+      <div class="rp-table-wrapper">
+        <table class="rp-table">
+          <thead>
+            <tr>
+              <th (click)="sort('referenceId')" class="rp-th--sortable">
+                Reference {{ sortIcon('referenceId') }}
+              </th>
+              <th (click)="sort('senderAccountNumber')" class="rp-th--sortable">
+                Sender {{ sortIcon('senderAccountNumber') }}
+              </th>
+              <th>Receiver</th>
+              <th (click)="sort('amount')" class="rp-th--sortable">
+                Amount {{ sortIcon('amount') }}
+              </th>
+              <th>Type</th>
+              <th (click)="sort('status')" class="rp-th--sortable">
+                Status {{ sortIcon('status') }}
+              </th>
+              <th>Flagged</th>
+              <th (click)="sort('createdAt')" class="rp-th--sortable">
+                Date {{ sortIcon('createdAt') }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="pagedRows.length === 0">
+              <td colspan="8" class="rp-empty">No transactions found</td>
+            </tr>
+            <tr
+              *ngFor="let txn of pagedRows"
+              [class.rp-row--flagged]="txn.isFlagged">
+              <td>
+                <code class="rp-ref" [title]="txn.referenceId">
+                  {{ shortRef(txn.referenceId) }}
+                </code>
+              </td>
+              <td>{{ txn.senderAccountNumber }}</td>
+              <td>{{ txn.receiverAccountNumber }}</td>
+              <td><strong>{{ formatINR(txn.amount) }}</strong></td>
+              <td>
+                <span class="badge" [ngClass]="typeClass(txn.transactionType)">
+                  {{ txn.transactionType }}
+                </span>
+              </td>
+              <td>
+                <span class="badge" [ngClass]="statusClass(txn.status)">
+                  {{ txn.status }}
+                </span>
+              </td>
+              <td>
+                <svg *ngIf="txn.isFlagged" width="14" height="14"
+                     viewBox="0 0 24 24" fill="#E24B4A">
+                  <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4
+                           1-5-2-8-2-4 1-4 1zM4 22v-7"/>
+                </svg>
+                <span *ngIf="!txn.isFlagged" class="rp-zero">—</span>
+              </td>
+              <td class="rp-date">{{ formatDate(txn.createdAt) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="rp-pagination" *ngIf="totalPages > 1">
+        <button
+          class="rp-page-btn"
+          [disabled]="currentPage === 1"
+          (click)="currentPage = currentPage - 1">
+          ‹
+        </button>
+        <button
+          *ngFor="let p of pageNumbers"
+          class="rp-page-btn"
+          [class.rp-page-btn--active]="currentPage === p"
+          (click)="currentPage = p">
+          {{ p }}
+        </button>
+        <button
+          class="rp-page-btn"
+          [disabled]="currentPage === totalPages"
+          (click)="currentPage = currentPage + 1">
+          ›
+        </button>
+        <span class="rp-page-info">
+          {{ (currentPage - 1) * pageSize + 1 }}–
+          {{ Math.min(currentPage * pageSize, filteredRows.length) }}
+          of {{ filteredRows.length }}
+        </span>
+      </div>
+
+    </div>
+
+  </ng-container>
+
+</div>
